@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PawPals Pet E-Commerce & Visual AI Copilot</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff7ed',
+                            100: '#ffedd5',
+                            500: '#f97316',
+                            600: '#ea580c',
+                            700: '#c2410c',
+                        },
+                        copilot: {
+                            50: '#f0f9ff',
+                            500: '#06b6d4',
+                            600: '#0891b2',
+                            900: '#0f172a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.03);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.15);
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(0,0,0,0.25);
+        }
+        @keyframes scan {
+            0% { top: 0%; opacity: 0.8; }
+            50% { top: 95%; opacity: 1; }
+            100% { top: 0%; opacity: 0.8; }
+        }
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #06b6d4, #f97316, transparent);
+            box-shadow: 0 0 12px #06b6d4;
+            animation: scan 2.2s infinite ease-in-out;
+        }
+        .pulse-ring {
+            box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.4);
+            animation: pulse 1.8s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.5); }
+            70% { box-shadow: 0 0 0 12px rgba(6, 182, 212, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- JavaScript Application Logic (Moved to top of body so all inline onclick handlers work immediately) -->
+    <script>
+        // --- Multilingual Localization Data ---
+        const i18n = {
+            zh: {
+                navShop: "線上商城",
+                navVisualSearch: "AI 拍照/識圖搜尋",
+                navSubscriptions: "定期訂閱管家",
+                navAdmin: "商家後台",
+                heroBadge: "全新升級：AI 視覺影像識別 2.0",
+                heroTitle: "看到喜歡的寵物用品？拍張照即可尋找同款或替代方案",
+                heroSubtitle: "上傳相片或打開手機相機對準物品，PawPals Copilot 會自動分析材質、成分、適合寵物，並精準比對庫存產品與試算優惠！",
+                btnStartVisualSearch: "拍下/上傳照片搜尋",
+                btnChatCopilot: "開啟 AI 顧問諮詢",
+                searchPlaceholder: "搜尋產品名稱、關鍵字...",
+                btnCopilotWidget: "Visual AI Copilot",
+                subTitle: "我的定期自動訂閱",
+                subDesc: "由 AI 自動監控寵物消耗品存量，為您省去重覆下單的麻煩。",
+                btnNewSub: "新增訂閱週期",
+                adminTitle: "商家營運與 Visual AI 管理後台",
+                adminDesc: "實時監視視覺搜尋轉換率、熱門檢索圖片特徵與庫存預警。",
+                metricVisualSearches: "今日 AI 拍照搜尋次數",
+                metricVisualConv: "相機搜尋轉換率",
+                metricSubActive: "有效自動訂閱數",
+                metricTotalRev: "本月總營收 (NT$)",
+                adminTopTags: "熱門視覺識別特徵與比對關鍵字",
+                copilotHeaderDesc: "支援拍攝產品/照片解析、成分查詢與替代品比對",
+                copilotGreeting: "您好！我是 PawPals Visual AI 寵物助理。您可以隨時**拍照**或**上傳照片**，我會獨立分析用品材質、營養成分，並找出同款或類似優惠產品！",
+                quickTryTitle: "💡 快速試用範例照片：",
+                sampleBed: "人體工學狗床",
+                sampleTreats: "鮭魚凍乾貓零食",
+                sampleToy: "羽毛雷射逗貓棒",
+                alignProductPrompt: "將產品放入框內即可拍攝",
+                photoReady: "影像已就緒",
+                clickSendToAnalyze: "點擊傳送按鈕讓 AI 進行視覺搜尋",
+                btnCancel: "取消",
+                copilotInputPlaceholder: "輸入文字或附帶照片詢問...",
+                cartTitle: "購物車",
+                cartSubtotal: "小計",
+                cartTotal: "總計",
+                btnCheckout: "前往結帳",
+                addToCart: "加入購物車",
+                viewDetails: "查看細節與評價",
+                matchConfidence: "比對匹配度",
+                detectedAttributes: "AI 偵測特徵",
+                subCreatedToast: "已成功新增定期訂閱任務！",
+                cartAddedToast: "已成功加入購物車！",
+                checkoutSuccess: "感謝您的購買！訂單已成功建立。",
+                allCategories: "全部商品",
+                catBeds: "窩墊寢具",
+                catTreats: "保健零食",
+                catToys: "玩具互動",
+                catLitter: "貓砂清潔",
+                // Reviews & Ratings i18n
+                reviewsHeading: "用家真實評價與推薦度",
+                writeReviewBtn: "撰寫評價",
+                verifiedBuyer: "已購買驗證買家",
+                helpfulCount: "覺得實用",
+                writeReviewTitle: "撰寫商品評價",
+                writeReviewSubtitle: "分享您與寶貝的真實使用體驗，幫助更多毛爸媽！",
+                selectRating: "整體滿意度",
+                reviewAuthorName: "您的暱稱 / 寵物名字",
+                reviewCommentText: "評價內容與體驗心得",
+                reviewPhotoAttach: "上傳實拍照片 (選填)",
+                btnSubmitReview: "公開送出評價",
+                filterAllRatings: "全部評價",
+                filterWithPhotos: "含實拍照片",
+                reviewAddedToast: "感謝評價！已成功公開您的心得。",
+                merchantReply: "PawPals 商家回覆",
+            },
+            en: {
+                navShop: "Shop",
+                navVisualSearch: "AI Visual Search",
+                navSubscriptions: "Auto-Subscriptions",
+                navAdmin: "Merchant Portal",
+                heroBadge: "Upgraded: AI Visual Recognition 2.0",
+                heroTitle: "See something you like? Snap a photo to find exact or alternative products",
+                heroSubtitle: "Upload a photo or use your camera. PawPals Copilot analyzes materials, ingredients, and matching pet products instantly!",
+                btnStartVisualSearch: "Snap / Upload Photo",
+                btnChatCopilot: "Chat with AI Copilot",
+                searchPlaceholder: "Search products, keywords...",
+                btnCopilotWidget: "Visual AI Copilot",
+                subTitle: "My Auto-Subscriptions",
+                subDesc: "AI monitors consumable supplies and manages automated delivery.",
+                btnNewSub: "Add New Subscription",
+                adminTitle: "Merchant & Visual AI Dashboard",
+                adminDesc: "Monitor visual search conversion rates, top image tags, and stock alerts.",
+                metricVisualSearches: "Today's Visual Searches",
+                metricVisualConv: "Camera Search Conversion",
+                metricSubActive: "Active Subscriptions",
+                metricTotalRev: "Monthly Revenue (NT$)",
+                adminTopTags: "Top Visual Recognized Tags & Keywords",
+                copilotHeaderDesc: "Analyze product photos, ingredients, and find best matches",
+                copilotGreeting: "Hello! I am PawPals Visual AI Copilot. Snap or upload a photo anytime, and I'll analyze materials, ingredients, and show matching items!",
+                quickTryTitle: "💡 Quick Sample Photos:",
+                sampleBed: "Ergonomic Dog Bed",
+                sampleTreats: "Freeze-Dried Treats",
+                sampleToy: "Laser Feather Toy",
+                alignProductPrompt: "Align product inside frame",
+                photoReady: "Image Ready",
+                clickSendToAnalyze: "Click send for AI Visual Analysis",
+                btnCancel: "Cancel",
+                copilotInputPlaceholder: "Type message or attach photo...",
+                cartTitle: "Shopping Cart",
+                cartSubtotal: "Subtotal",
+                cartTotal: "Total",
+                btnCheckout: "Checkout Now",
+                addToCart: "Add to Cart",
+                viewDetails: "View Details & Reviews",
+                matchConfidence: "Match Score",
+                detectedAttributes: "Detected Tags",
+                subCreatedToast: "Subscription added successfully!",
+                cartAddedToast: "Added to cart!",
+                checkoutSuccess: "Thank you! Order placed successfully.",
+                allCategories: "All Products",
+                catBeds: "Beds & Furniture",
+                catTreats: "Treats & Snacks",
+                catToys: "Toys & Interactive",
+                catLitter: "Litter & Hygiene",
+                // Reviews & Ratings i18n
+                reviewsHeading: "Customer Reviews & Ratings",
+                writeReviewBtn: "Write a Review",
+                verifiedBuyer: "Verified Buyer",
+                helpfulCount: "Helpful",
+                writeReviewTitle: "Write a Product Review",
+                writeReviewSubtitle: "Share your experience to help fellow pet parents!",
+                selectRating: "Overall Rating",
+                reviewAuthorName: "Your Name / Pet's Name",
+                reviewCommentText: "Review & Experience",
+                reviewPhotoAttach: "Attach Photos (Optional)",
+                btnSubmitReview: "Submit Review",
+                filterAllRatings: "All Ratings",
+                filterWithPhotos: "With Photos Only",
+                reviewAddedToast: "Thank you! Your review is now live.",
+                merchantReply: "PawPals Store Response",
+            },
+            ja: {
+                navShop: "ショップ",
+                navVisualSearch: "AI 画像検索",
+                navSubscriptions: "定期購買",
+                navAdmin: "店舗管理",
+                heroBadge: "新機能：AIビジュアル認識 2.0",
+                heroTitle: "気になったペット用品を写真で撮るだけ！同等品や代替品を即座に検索",
+                heroSubtitle: "写真をアップロードするかカメラで撮影すると、PawPals Copilotが素材・成分・対象ペットを分析し、最適な商品をご提案します。",
+                btnStartVisualSearch: "写真で検索する",
+                btnChatCopilot: "AIアドバイザーに相談",
+                searchPlaceholder: "商品名・キーワードで検索...",
+                btnCopilotWidget: "Visual AI Copilot",
+                subTitle: "定期自動購入管理",
+                subDesc: "AIが日用品の消費ペースを自動計算し、買い忘れを防止します。",
+                btnNewSub: "定期購入を追加",
+                adminTitle: "店舗管理・Visual AI ダッシュボード",
+                adminDesc: "画像検索コンバージョン率、人気認識タグ、在庫状況をリアルタイム確認。",
+                metricVisualSearches: "本日の画像検索数",
+                metricVisualConv: "カメラ検索購買率",
+                metricSubActive: "有効な定期購入",
+                metricTotalRev: "今月の売上 (NT$)",
+                adminTopTags: "人気検索AIタグ・キーワード",
+                copilotHeaderDesc: "商品写真・成分の分析と最適マッチング",
+                copilotGreeting: "こんにちは！PawPals Visual AI アシスタントです。写真をアップロードまたは撮影していただくと、素材や成分を自動解析し最適な商品をお探しします！",
+                quickTryTitle: "💡 サンプル写真でテスト：",
+                sampleBed: "整形外科風ベッド",
+                sampleTreats: "フリーズドライおやつ",
+                sampleToy: "羽毛レーザーおもちゃ",
+                alignProductPrompt: "枠内に商品を合わせて撮影",
+                photoReady: "準備完了",
+                clickSendToAnalyze: "送信ボタンを押してAI解析を開始",
+                btnCancel: "キャンセル",
+                copilotInputPlaceholder: "メッセージ入力または画像添付...",
+                cartTitle: "ショッピングカート",
+                cartSubtotal: "小計",
+                cartTotal: "合計",
+                btnCheckout: "レジに進む",
+                addToCart: "カートに入れる",
+                viewDetails: "詳細・レビューを見る",
+                matchConfidence: "一致度",
+                detectedAttributes: "検出された特徴",
+                subCreatedToast: "定期購入が正常に設定されました！",
+                cartAddedToast: "カートに追加しました！",
+                checkoutSuccess: "ご注文ありがとうございます！",
+                allCategories: "すべての商品",
+                catBeds: "ベッド・寝具",
+                catTreats: "おやつ・健康食品",
+                catToys: "おもちゃ",
+                catLitter: "猫砂・衛生",
+                // Reviews & Ratings i18n
+                reviewsHeading: "カスタマーレビュー・評価",
+                writeReviewBtn: "レビューを書く",
+                verifiedBuyer: "購入者認証済み",
+                helpfulCount: "参考になった",
+                writeReviewTitle: "レビューを投稿",
+                writeReviewSubtitle: "あなたの体験談をシェアして他の飼い主さんをサポート！",
+                selectRating: "総合評価",
+                reviewAuthorName: "お名前 / ペットのお名前",
+                reviewCommentText: "レビュー内容",
+                reviewPhotoAttach: "写真を添付 (任意)",
+                btnSubmitReview: "レビューを送信",
+                filterAllRatings: "すべてのレビュー",
+                filterWithPhotos: "写真付きのみ",
+                reviewAddedToast: "レビューのご投稿ありがとうございます！",
+                merchantReply: "PawPals ショップからの返信",
+            }
+        };
+
+        let currentLang = "zh";
+
+        function getI18nText(key) {
+            return i18n[currentLang][key] || key;
+        }
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (i18n[lang][key]) el.innerText = i18n[lang][key];
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (i18n[lang][key]) el.placeholder = i18n[lang][key];
+            });
+            renderCategoryFilters();
+            renderProducts();
+            renderSubscriptions();
+        }
+
+        // --- Mock Product Database with Reviews ---
+        const products = [
+            {
+                id: 1,
+                name: "雲朵記憶棉寵物舒壓床",
+                category: "beds",
+                price: 1280,
+                rating: 4.9,
+                reviewsCount: 142,
+                image: "https://images.unsplash.com/photo-1541599540903-216a46ca1dc0?auto=format&fit=crop&w=600&q=80",
+                tags: ["高彈力記憶棉", "可拆洗床套", "狗/貓通用"],
+                desc: "專為關節舒緩設計的支撐型記憶棉床，透氣防水布料，適合全齡犬貓。",
+                reviewsList: [
+                    {
+                        id: 101,
+                        author: "黃小柴與波波",
+                        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80",
+                        rating: 5,
+                        date: "2026-10-20",
+                        verified: true,
+                        comment: "我家 12 歲老柴犬睡得超香！記憶棉的支撐度非常有感，拆洗也方便，會再回購替換布套。",
+                        helpful: 24,
+                        photo: "https://images.unsplash.com/photo-1541599540903-216a46ca1dc0?auto=format&fit=crop&w=400&q=80",
+                        reply: "謝謝波波媽的回覆！老犬關節保健非常重要，有任何保養問題隨時找我們喔！"
+                    },
+                    {
+                        id: 102,
+                        author: "英短喵喵控",
+                        avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=120&q=80",
+                        rating: 5,
+                        date: "2026-10-15",
+                        verified: true,
+                        comment: "一開箱貓咪就直接鑽進去踏踏不出來了，材質很軟又不掉毛，非常推薦！",
+                        helpful: 12,
+                        photo: null,
+                        reply: null
+                    }
+                ]
+            },
+            {
+                id: 2,
+                name: "極致深海鮭魚原肉凍乾 150g",
+                category: "treats",
+                price: 450,
+                rating: 4.8,
+                reviewsCount: 210,
+                image: "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?auto=format&fit=crop&w=600&q=80",
+                tags: ["100% 智利鮭魚", "低溫冷凍乾燥", "無添加防腐劑"],
+                desc: "鎖住濃縮海鮮精華，富含 Omega-3，維護皮膚毛髮健康。",
+                reviewsList: [
+                    {
+                        id: 201,
+                        author: "喵星人阿皇",
+                        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80",
+                        rating: 5,
+                        date: "2026-10-22",
+                        verified: true,
+                        comment: "凍乾質地非常酥脆！加水捏碎混進主食罐裡面，原本挑食的主子秒速掃光！",
+                        helpful: 31,
+                        photo: "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?auto=format&fit=crop&w=400&q=80",
+                        reply: null
+                    }
+                ]
+            },
+            {
+                id: 3,
+                name: "智能紅外線雷射羽毛逗貓棒",
+                category: "toys",
+                price: 680,
+                rating: 4.7,
+                reviewsCount: 89,
+                image: "https://images.unsplash.com/photo-1615751072497-5f5169febe17?auto=format&fit=crop&w=600&q=80",
+                tags: ["360度不規則運轉", "USB充電", "自動定時開關"],
+                desc: "解放主人雙手！內建智能感應，可隨機變換光點軌跡，激發獵食本能。",
+                reviewsList: [
+                    {
+                        id: 301,
+                        author: "上班族小林",
+                        avatar: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=120&q=80",
+                        rating: 4,
+                        date: "2026-10-08",
+                        verified: true,
+                        comment: "上班出門設 15 分鐘自動開關，晚上回家貓咪運動量夠了比較不會亂叫，充電速度也很快。",
+                        helpful: 8,
+                        photo: null,
+                        reply: null
+                    }
+                ]
+            },
+            {
+                id: 4,
+                name: "天然豆腐貓砂 (無香極速凝結) 6L",
+                category: "litter",
+                price: 260,
+                rating: 4.9,
+                reviewsCount: 350,
+                image: "https://images.unsplash.com/photo-1592194996308-7b43878e84a6?auto=format&fit=crop&w=600&q=80",
+                tags: ["可沖馬桶", "食品級豌豆纖維", "極低粉塵"],
+                desc: "3秒極速吸水凝結，抑菌去味，環保可降解。",
+                reviewsList: []
+            },
+            {
+                id: 5,
+                name: "耐咬天然橡膠漏食啃咬球",
+                category: "toys",
+                price: 320,
+                rating: 4.6,
+                reviewsCount: 76,
+                image: "https://images.unsplash.com/photo-1535294435445-d7249524ef2e?auto=format&fit=crop&w=600&q=80",
+                tags: ["天然無毒橡膠", "潔牙凸點", "慢食獎勵"],
+                desc: "可放入零食粒，耐磨耐咬，兼具潔牙與益智消磨時間功能。",
+                reviewsList: []
+            },
+            {
+                id: 6,
+                name: "有機凍乾雞胸肉肉條 200g",
+                category: "treats",
+                price: 390,
+                rating: 4.9,
+                reviewsCount: 188,
+                image: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?auto=format&fit=crop&w=600&q=80",
+                tags: ["高蛋白質", "低脂無負擔", "全齡犬貓"],
+                desc: "採用CAS檢驗合格優質雞胸肉，口感香酥，易撕碎做訓練獎勵。",
+                reviewsList: []
+            }
+        ];
+
+        // --- Visual Preset Sample Images ---
+        const sampleVisualScenarios = [
+            {
+                sampleName: "人體工學狗床",
+                imageUrl: "https://images.unsplash.com/photo-1541599540903-216a46ca1dc0?auto=format&fit=crop&w=600&q=80",
+                detectedTags: ["寢具窩墊", "記憶棉材質", "灰色橢圓形", "犬用舒壓"],
+                bestMatchId: 1,
+                matchConfidence: 98,
+            },
+            {
+                sampleName: "鮭魚凍乾貓零食",
+                imageUrl: "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?auto=format&fit=crop&w=600&q=80",
+                detectedTags: ["肉類凍乾", "海鮮鮭魚成分", "塊狀飼料零食", "貓犬營養補給"],
+                bestMatchId: 2,
+                matchConfidence: 95,
+            },
+            {
+                sampleName: "羽毛雷射逗貓棒",
+                imageUrl: "https://images.unsplash.com/photo-1615751072497-5f5169febe17?auto=format&fit=crop&w=600&q=80",
+                detectedTags: ["互動式玩具", "塑膠/金屬材質", "貓咪健身", "電動/紅外線"],
+                bestMatchId: 3,
+                matchConfidence: 92,
+            }
+        ];
+
+        // --- App State ---
+        let currentCategory = "all";
+        let cart = [];
+        let stagedImageBase64 = null;
+        let mediaStream = null;
+        let currentReviewRatingScore = 5;
+        let reviewFilterStar = 'all';
+
+        // --- Core UI Navigation ---
+        function switchTab(tab) {
+            ['shop', 'subscriptions', 'admin'].forEach(t => {
+                const el = document.getElementById(`view-${t}`);
+                const btn = document.getElementById(`nav-${t}`);
+                if (t === tab) {
+                    if (el) el.classList.remove('hidden');
+                    if (btn) {
+                        btn.classList.add('text-brand-600', 'bg-brand-50');
+                        btn.classList.remove('text-gray-600');
+                    }
+                } else {
+                    if (el) el.classList.add('hidden');
+                    if (btn) {
+                        btn.classList.remove('text-brand-600', 'bg-brand-50');
+                        btn.classList.add('text-gray-600');
+                    }
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        // --- Product Rendering ---
+        function renderCategoryFilters() {
+            const categories = [
+                { id: "all", nameKey: "allCategories" },
+                { id: "beds", nameKey: "catBeds" },
+                { id: "treats", nameKey: "catTreats" },
+                { id: "toys", nameKey: "catToys" },
+                { id: "litter", nameKey: "catLitter" },
+            ];
+
+            const container = document.getElementById('categoryFilters');
+            if (!container) return;
+            container.innerHTML = categories.map(cat => `
+                <button onclick="setCategory('${cat.id}')" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition ${currentCategory === cat.id ? 'bg-brand-500 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}">
+                    ${getI18nText(cat.nameKey)}
+                </button>
+            `).join('');
+        }
+
+        function setCategory(catId) {
+            currentCategory = catId;
+            renderCategoryFilters();
+            renderProducts();
+        }
+
+        function filterProducts() {
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const searchEl = document.getElementById('searchInput');
+            const query = searchEl ? searchEl.value.toLowerCase() : '';
+            const grid = document.getElementById('productGrid');
+            if (!grid) return;
+
+            const filtered = products.filter(p => {
+                const matchesCat = currentCategory === 'all' || p.category === currentCategory;
+                const matchesSearch = p.name.toLowerCase().includes(query) || p.tags.some(t => t.toLowerCase().includes(query));
+                return matchesCat && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-12 text-center text-gray-400">
+                        <i class="fa-solid fa-box-open text-4xl mb-3"></i>
+                        <p class="text-sm">找不到符合的商品，嘗試使用照片辨識搜尋！</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(product => `
+                <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition duration-300 flex flex-col group">
+                    <div class="relative aspect-square overflow-hidden bg-gray-100 cursor-pointer" onclick="openProductModal(${product.id})">
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                        <span class="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[11px] font-bold text-gray-700 shadow-sm flex items-center gap-1">
+                            <i class="fa-solid fa-star text-amber-400"></i> ${product.rating} <span class="text-gray-400 font-normal">(${product.reviewsCount})</span>
+                        </span>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                        <div>
+                            <div class="flex flex-wrap gap-1 mb-2">
+                                ${product.tags.map(t => `<span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-medium">${t}</span>`).join('')}
+                            </div>
+                            <h3 onclick="openProductModal(${product.id})" class="font-bold text-gray-800 text-base leading-snug hover:text-brand-600 cursor-pointer transition">${product.name}</h3>
+                        </div>
+                        <div class="flex items-center justify-between pt-2 border-t border-gray-50">
+                            <div>
+                                <span class="text-xs text-gray-400 font-semibold">NT$</span>
+                                <span class="text-xl font-extrabold text-gray-900">${product.price}</span>
+                            </div>
+                            <button onclick="addToCart(${product.id})" class="px-3 py-2 bg-brand-50 hover:bg-brand-500 hover:text-white text-brand-600 font-bold text-xs rounded-xl transition flex items-center space-x-1">
+                                <i class="fa-solid fa-cart-plus"></i>
+                                <span>${getI18nText('addToCart')}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- Copilot & Visual Search Engine ---
+        function toggleCopilotModal(show) {
+            const modal = document.getElementById('copilotModal');
+            if (!modal) return;
+            if (show) modal.classList.remove('hidden');
+            else {
+                modal.classList.add('hidden');
+                closeCameraView();
+            }
+        }
+
+        function openCopilotVisualSearch() {
+            toggleCopilotModal(true);
+            showToast("請點擊下方相機或圖片圖示開始視覺搜尋");
+        }
+
+        function clearStagedImage() {
+            stagedImageBase64 = null;
+            const bar = document.getElementById('imageStagingBar');
+            const preview = document.getElementById('stagedImagePreview');
+            const input = document.getElementById('imageFileInput');
+            if (bar) bar.classList.add('hidden');
+            if (preview) preview.src = '';
+            if (input) input.value = '';
+        }
+
+        function handleFileSelected(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                stagedImageBase64 = e.target.result;
+                const preview = document.getElementById('stagedImagePreview');
+                const bar = document.getElementById('imageStagingBar');
+                if (preview) preview.src = stagedImageBase64;
+                if (bar) bar.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function openCameraView() {
+            const container = document.getElementById('cameraPreviewContainer');
+            const video = document.getElementById('webcamVideo');
+            
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                if (video) video.srcObject = mediaStream;
+                if (container) container.classList.remove('hidden');
+            } catch (err) {
+                showToast("無法存取相機，已開啟相簿選取");
+                const fileInput = document.getElementById('imageFileInput');
+                if (fileInput) fileInput.click();
+            }
+        }
+
+        function closeCameraView() {
+            const container = document.getElementById('cameraPreviewContainer');
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+            if (container) container.classList.add('hidden');
+        }
+
+        function capturePhotoFromCamera() {
+            const video = document.getElementById('webcamVideo');
+            const canvas = document.createElement('canvas');
+            canvas.width = (video && video.videoWidth) ? video.videoWidth : 640;
+            canvas.height = (video && video.videoHeight) ? video.videoHeight : 480;
+            const ctx = canvas.getContext('2d');
+            if (video) ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            stagedImageBase64 = canvas.toDataURL('image/jpeg');
+            const preview = document.getElementById('stagedImagePreview');
+            const bar = document.getElementById('imageStagingBar');
+            if (preview) preview.src = stagedImageBase64;
+            if (bar) bar.classList.remove('hidden');
+            
+            closeCameraView();
+        }
+
+        function simulateSampleImageSearch(index) {
+            const scenario = sampleVisualScenarios[index];
+            stagedImageBase64 = scenario.imageUrl;
+            const copilotInput = document.getElementById('copilotInput');
+            if (copilotInput) copilotInput.value = `分析照片中的用品：${scenario.sampleName}`;
+            processCopilotSearch(scenario);
+        }
+
+        function handleCopilotSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('copilotInput');
+            const text = input ? input.value.trim() : '';
+
+            if (!text && !stagedImageBase64) return;
+
+            let matchedScenario = sampleVisualScenarios[0];
+            if (text.includes("鮭魚") || text.includes("零食") || text.includes("凍乾")) {
+                matchedScenario = sampleVisualScenarios[1];
+            } else if (text.includes("玩具") || text.includes("雷射") || text.includes("逗貓")) {
+                matchedScenario = sampleVisualScenarios[2];
+            }
+
+            processCopilotSearch(matchedScenario, text);
+            if (input) input.value = '';
+        }
+
+        function processCopilotSearch(scenario, userTextQuery = "") {
+            const chat = document.getElementById('chatContainer');
+            if (!chat) return;
+            const imageToSend = stagedImageBase64;
+
+            const userMsgHtml = `
+                <div class="flex items-start justify-end space-x-3">
+                    <div class="bg-brand-500 text-white p-3.5 rounded-2xl rounded-tr-none shadow-sm max-w-[80%] space-y-2">
+                        ${imageToSend ? `<div class="w-32 h-32 rounded-lg overflow-hidden border border-white/20 mb-2"><img src="${imageToSend}" class="w-full h-full object-cover"></div>` : ''}
+                        <p class="text-sm">${userTextQuery || '請幫我辨識這張圖片並推薦產品'}</p>
+                    </div>
+                </div>
+            `;
+            chat.insertAdjacentHTML('beforeend', userMsgHtml);
+            clearStagedImage();
+            chat.scrollTop = chat.scrollHeight;
+
+            const loadingId = 'ai-loading-' + Date.now();
+            const loadingHtml = `
+                <div id="${loadingId}" class="flex items-start space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-copilot-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 animate-pulse">AI</div>
+                    <div class="bg-white p-4 rounded-2xl rounded-tl-none border border-gray-200 shadow-sm flex items-center space-x-3">
+                        <div class="w-4 h-4 border-2 border-copilot-500 border-t-transparent rounded-full animate-spin"></div>
+                        <span class="text-xs text-gray-500 font-medium">Visual AI 正以視覺特徵卷積運算分析圖片...</span>
+                    </div>
+                </div>
+            `;
+            chat.insertAdjacentHTML('beforeend', loadingHtml);
+            chat.scrollTop = chat.scrollHeight;
+
+            setTimeout(() => {
+                const loadingElem = document.getElementById(loadingId);
+                if (loadingElem) loadingElem.remove();
+
+                const matchedProduct = products.find(p => p.id === scenario.bestMatchId) || products[0];
+
+                const aiResponseHtml = `
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 rounded-full bg-copilot-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">AI</div>
+                        <div class="bg-white p-4.5 rounded-2xl rounded-tl-none border border-copilot-100 shadow-md max-w-[88%] space-y-3">
+                            <div class="flex items-center justify-between border-b border-gray-100 pb-2">
+                                <span class="text-xs font-extrabold text-copilot-600 flex items-center">
+                                    <i class="fa-solid fa-circle-check mr-1.5"></i>視覺分析完成
+                                </span>
+                                <span class="text-[11px] bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded-full border border-emerald-200">
+                                    ${getI18nText('matchConfidence')}: ${scenario.matchConfidence}%
+                                </span>
+                            </div>
+
+                            <div>
+                                <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">${getI18nText('detectedAttributes')}</p>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${scenario.detectedTags.map(tag => `<span class="text-xs bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-md font-medium border border-slate-200"><i class="fa-solid fa-tag text-[10px] mr-1 text-copilot-500"></i>${tag}</span>`).join('')}
+                                </div>
+                            </div>
+
+                            <div class="bg-gradient-to-br from-slate-50 to-gray-50 p-3 rounded-xl border border-gray-200/80 flex items-center space-x-3">
+                                <img src="${matchedProduct.image}" class="w-16 h-16 rounded-lg object-cover flex-shrink-0 border border-gray-200">
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-bold text-gray-900 text-sm truncate">${matchedProduct.name}</h4>
+                                    <p class="text-xs text-gray-500 line-clamp-1">${matchedProduct.desc}</p>
+                                    <div class="mt-1 flex items-center justify-between">
+                                        <span class="text-sm font-black text-brand-600">NT$ ${matchedProduct.price}</span>
+                                        <div class="flex space-x-1">
+                                            <button onclick="addToCart(${matchedProduct.id})" class="px-2.5 py-1 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs rounded-lg transition shadow-sm">${getI18nText('addToCart')}</button>
+                                            <button onclick="openProductModal(${matchedProduct.id})" class="px-2.5 py-1 bg-white hover:bg-gray-100 text-gray-700 font-medium text-xs rounded-lg border border-gray-200 transition">${getI18nText('viewDetails')}</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                chat.insertAdjacentHTML('beforeend', aiResponseHtml);
+                chat.scrollTop = chat.scrollHeight;
+            }, 1200);
+        }
+
+        // --- Product Details & Ratings Modal ---
+        function openProductModal(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            const modal = document.getElementById('productModal');
+            const content = document.getElementById('productModalContent');
+            if (!modal || !content) return;
+
+            // Rating Stars Generator
+            const renderStars = (rating) => {
+                let stars = '';
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= Math.floor(rating)) {
+                        stars += `<i class="fa-solid fa-star text-amber-400"></i>`;
+                    } else if (i - 0.5 <= rating) {
+                        stars += `<i class="fa-solid fa-star-half-stroke text-amber-400"></i>`;
+                    } else {
+                        stars += `<i class="fa-regular fa-star text-gray-300"></i>`;
+                    }
+                }
+                return stars;
+            };
+
+            content.innerHTML = `
+                <button onclick="closeProductModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-2 z-10">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+
+                <div class="overflow-y-auto custom-scrollbar pr-1 space-y-6">
+                    <!-- Top Info Section -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="aspect-square rounded-2xl overflow-hidden bg-gray-100 border border-gray-100 shadow-sm">
+                            <img src="${product.image}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="space-y-4 flex flex-col justify-between">
+                            <div class="space-y-2">
+                                <div class="flex flex-wrap gap-1">
+                                    ${product.tags.map(t => `<span class="text-xs bg-brand-50 text-brand-600 px-2.5 py-0.5 rounded-md font-medium">${t}</span>`).join('')}
+                                </div>
+                                <h3 class="text-2xl font-bold text-gray-900 leading-snug">${product.name}</h3>
+                                
+                                <!-- Rating Summary Badge -->
+                                <div class="flex items-center space-x-2 pt-1">
+                                    <div class="flex text-sm">${renderStars(product.rating)}</div>
+                                    <span class="text-sm font-extrabold text-gray-800">${product.rating}</span>
+                                    <span class="text-xs text-gray-400">(${product.reviewsCount} 則用家評價)</span>
+                                </div>
+
+                                <p class="text-xs text-gray-600 leading-relaxed pt-2">${product.desc}</p>
+                            </div>
+
+                            <div class="pt-4 border-t border-gray-100 space-y-3">
+                                <div class="flex items-baseline justify-between">
+                                    <span class="text-3xl font-black text-brand-600">NT$ ${product.price}</span>
+                                    <span class="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded-md"><i class="fa-solid fa-truck-fast mr-1"></i>現貨可快遞出貨</span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="addToCart(${product.id}); closeProductModal();" class="flex-1 py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl shadow-lg shadow-brand-500/20 transition flex items-center justify-center space-x-2">
+                                        <i class="fa-solid fa-cart-plus"></i>
+                                        <span>${getI18nText('addToCart')}</span>
+                                    </button>
+                                    <button onclick="openWriteReviewModal(${product.id})" class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center space-x-1">
+                                        <i class="fa-solid fa-pen"></i>
+                                        <span>${getI18nText('writeReviewBtn')}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reviews & Ratings System Section -->
+                    <div class="border-t border-gray-100 pt-6 space-y-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                                <h4 class="text-lg font-extrabold text-gray-900 flex items-center">
+                                    <i class="fa-solid fa-comments text-brand-500 mr-2"></i>
+                                    <span>${getI18nText('reviewsHeading')}</span>
+                                </h4>
+                                <p class="text-xs text-gray-500">100% 來自已驗證購買毛爸媽的實測留言</p>
+                            </div>
+                            <button onclick="openWriteReviewModal(${product.id})" class="px-4 py-2 bg-brand-50 text-brand-600 hover:bg-brand-500 hover:text-white font-bold text-xs rounded-xl transition flex items-center justify-center space-x-1">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>${getI18nText('writeReviewBtn')}</span>
+                            </button>
+                        </div>
+
+                        <!-- Rating Overview Dashboard Cards -->
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+                            <div class="text-center sm:border-r border-slate-200 pr-2">
+                                <div class="text-4xl font-black text-gray-900">${product.rating}</div>
+                                <div class="flex justify-center text-amber-400 text-xs my-1">${renderStars(product.rating)}</div>
+                                <div class="text-xs text-gray-400">總計 ${product.reviewsCount} 評分</div>
+                            </div>
+
+                            <!-- Rating Distribution Progress Bars -->
+                            <div class="sm:col-span-2 space-y-1.5 text-xs">
+                                <div class="flex items-center space-x-2">
+                                    <span class="w-8 font-semibold text-gray-600">5 星</span>
+                                    <div class="flex-1 bg-gray-200 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-amber-400 h-full w-[88%]"></div>
+                                    </div>
+                                    <span class="w-8 text-right text-gray-400">88%</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="w-8 font-semibold text-gray-600">4 星</span>
+                                    <div class="flex-1 bg-gray-200 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-amber-400 h-full w-[10%]"></div>
+                                    </div>
+                                    <span class="w-8 text-right text-gray-400">10%</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="w-8 font-semibold text-gray-600">3 星</span>
+                                    <div class="flex-1 bg-gray-200 h-2 rounded-full overflow-hidden">
+                                        <div class="bg-amber-400 h-full w-[2%]"></div>
+                                    </div>
+                                    <span class="w-8 text-right text-gray-400">2%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Review Comments List Container -->
+                        <div class="space-y-4" id="modalReviewsList">
+                            ${renderProductReviewsList(product.reviewsList, renderStars)}
+                        </div>
+                    </div>
+                </div>
+            `;
+            modal.classList.remove('hidden');
+        }
+
+        function renderProductReviewsList(reviewsList, renderStars) {
+            if (!reviewsList || reviewsList.length === 0) {
+                return `
+                    <div class="py-8 text-center text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                        <i class="fa-regular fa-comment-dots text-3xl mb-2"></i>
+                        <p class="text-xs">尚無留言評價，成為第一個分享體驗的毛爸媽吧！</p>
+                    </div>
+                `;
+            }
+
+            return reviewsList.map(rev => `
+                <div class="p-4 bg-white rounded-xl border border-gray-100 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <img src="${rev.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80'}" class="w-9 h-9 rounded-full object-cover border border-gray-200">
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-bold text-sm text-gray-800">${rev.author}</span>
+                                    ${rev.verified ? `<span class="text-[10px] bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded-md"><i class="fa-solid fa-shield-check mr-1"></i>${getI18nText('verifiedBuyer')}</span>` : ''}
+                                </div>
+                                <div class="flex items-center space-x-2 mt-0.5">
+                                    <div class="flex text-xs">${renderStars(rev.rating)}</div>
+                                    <span class="text-[11px] text-gray-400">${rev.date}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="voteHelpful(${rev.id}, this)" class="text-xs text-gray-400 hover:text-brand-600 px-2.5 py-1 rounded-lg border border-gray-200 hover:bg-brand-50 transition">
+                            <i class="fa-regular fa-thumbs-up mr-1"></i>${getI18nText('helpfulCount')} (${rev.helpful})
+                        </button>
+                    </div>
+
+                    <p class="text-xs text-gray-700 leading-relaxed">${rev.comment}</p>
+
+                    ${rev.photo ? `
+                        <div class="w-24 h-24 rounded-lg overflow-hidden border border-gray-200">
+                            <img src="${rev.photo}" class="w-full h-full object-cover">
+                        </div>
+                    ` : ''}
+
+                    ${rev.reply ? `
+                        <div class="bg-slate-50 p-3 rounded-lg border-l-2 border-brand-500 text-xs space-y-1">
+                            <span class="font-bold text-brand-600 flex items-center">
+                                <i class="fa-solid fa-store mr-1.5"></i>${getI18nText('merchantReply')}
+                            </span>
+                            <p class="text-gray-600">${rev.reply}</p>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function voteHelpful(reviewId, btnElement) {
+            btnElement.classList.add('text-brand-600', 'bg-brand-50');
+            showToast("感謝您的回饋！");
+        }
+
+        function closeProductModal() {
+            const modal = document.getElementById('productModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        // --- Write / Submit Review Logic ---
+        function openWriteReviewModal(productId) {
+            const hiddenInput = document.getElementById('reviewProductId');
+            const modal = document.getElementById('writeReviewModal');
+            if (hiddenInput) hiddenInput.value = productId;
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function toggleWriteReviewModal(show) {
+            const modal = document.getElementById('writeReviewModal');
+            if (!modal) return;
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
+        function setReviewScore(score) {
+            currentReviewRatingScore = score;
+            const stars = document.querySelectorAll('#starPicker i');
+            stars.forEach((star, idx) => {
+                if (idx < score) {
+                    star.className = "fa-solid fa-star hover:scale-110 transition text-amber-400";
+                } else {
+                    star.className = "fa-regular fa-star hover:scale-110 transition text-gray-300";
+                }
+            });
+            const label = document.getElementById('selectedRatingLabel');
+            if (label) label.innerText = `${score}.0 / 5.0`;
+        }
+
+        function handleReviewSubmit(e) {
+            e.preventDefault();
+            const productIdInput = document.getElementById('reviewProductId');
+            const authorInput = document.getElementById('reviewAuthor');
+            const commentInput = document.getElementById('reviewComment');
+
+            const productId = parseInt(productIdInput ? productIdInput.value : '0');
+            const author = authorInput ? authorInput.value.trim() : '';
+            const comment = commentInput ? commentInput.value.trim() : '';
+
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                const newRev = {
+                    id: Date.now(),
+                    author: author || "匿名毛爸媽",
+                    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80",
+                    rating: currentReviewRatingScore,
+                    date: new Date().toISOString().split('T')[0],
+                    verified: true,
+                    comment: comment,
+                    helpful: 0,
+                    photo: null,
+                    reply: null
+                };
+                product.reviewsList.unshift(newRev);
+                product.reviewsCount += 1;
+            }
+
+            toggleWriteReviewModal(false);
+            showToast(getI18nText('reviewAddedToast'));
+
+            if (product) {
+                openProductModal(productId);
+            }
+        }
+
+        // --- Cart Operations ---
+        function toggleCartDrawer(show) {
+            const drawer = document.getElementById('cartDrawer');
+            if (!drawer) return;
+            if (show) drawer.classList.remove('hidden');
+            else drawer.classList.add('hidden');
+        }
+
+        function addToCart(productId) {
+            const item = products.find(p => p.id === productId);
+            if (!item) return;
+
+            const existing = cart.find(c => c.id === productId);
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                cart.push({ ...item, qty: 1 });
+            }
+
+            updateCartUI();
+            showToast(getI18nText('cartAddedToast'));
+        }
+
+        function updateCartQty(productId, delta) {
+            const item = cart.find(c => c.id === productId);
+            if (item) {
+                item.qty += delta;
+                if (item.qty <= 0) {
+                    cart = cart.filter(c => c.id !== productId);
+                }
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const badge = document.getElementById('cartBadge');
+            const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+            
+            if (badge) {
+                if (totalQty > 0) {
+                    badge.innerText = totalQty;
+                    badge.classList.remove('scale-0');
+                } else {
+                    badge.classList.add('scale-0');
+                }
+            }
+
+            const list = document.getElementById('cartItemsList');
+            if (list) {
+                if (cart.length === 0) {
+                    list.innerHTML = `
+                        <div class="py-12 text-center text-gray-400">
+                            <i class="fa-solid fa-basket-shopping text-3xl mb-2"></i>
+                            <p class="text-sm">購物車是空的</p>
+                        </div>
+                    `;
+                } else {
+                    list.innerHTML = cart.map(item => `
+                        <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                            <img src="${item.image}" class="w-14 h-14 rounded-lg object-cover">
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-bold text-sm text-gray-800 truncate">${item.name}</h4>
+                                <span class="text-xs text-brand-600 font-bold">NT$ ${item.price}</span>
+                            </div>
+                            <div class="flex items-center space-x-1 bg-white border border-gray-200 rounded-lg p-1">
+                                <button onclick="updateCartQty(${item.id}, -1)" class="w-6 h-6 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded">-</button>
+                                <span class="text-xs font-bold w-6 text-center">${item.qty}</span>
+                                <button onclick="updateCartQty(${item.id}, 1)" class="w-6 h-6 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded">+</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const subtotalEl = document.getElementById('cartSubtotal');
+            const totalEl = document.getElementById('cartTotal');
+            if (subtotalEl) subtotalEl.innerText = `NT$ ${total}`;
+            if (totalEl) totalEl.innerText = `NT$ ${total}`;
+        }
+
+        function checkout() {
+            if (cart.length === 0) return;
+            cart = [];
+            updateCartUI();
+            toggleCartDrawer(false);
+            showToast(getI18nText('checkoutSuccess'));
+        }
+
+        // --- Subscriptions Render ---
+        function renderSubscriptions() {
+            const mockSubs = [
+                { id: 1, name: "天然豆腐貓砂 6L (x2包)", interval: "每月 15 號配送", status: "Active", price: 520, nextDate: "2026-11-15" },
+                { id: 2, name: "極致深海鮭魚原肉凍乾 150g", interval: "每 3 週配送", status: "Active", price: 450, nextDate: "2026-11-02" }
+            ];
+
+            const list = document.getElementById('subscriptionList');
+            if (!list) return;
+            list.innerHTML = mockSubs.map(s => `
+                <div class="p-4 border border-gray-200 rounded-xl bg-slate-50 flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">自動續訂中</span>
+                        <h4 class="font-bold text-gray-800 text-sm mt-1">${s.name}</h4>
+                        <p class="text-xs text-gray-500">${s.interval} | 下次送達: ${s.nextDate}</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-extrabold text-sm text-gray-900">NT$ ${s.price}</div>
+                        <button onclick="showToast('已調整配送日期')" class="text-xs text-copilot-600 font-semibold hover:underline mt-1">管理期程</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- Toast System ---
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            if (!toast || !toastMessage) return;
+            toastMessage.innerText = message;
+            
+            toast.classList.remove('translate-y-[-100px]', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-[-100px]', 'opacity-0');
+            }, 3000);
+        }
+
+        // --- Init App on DOMReady ---
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCategoryFilters();
+            renderProducts();
+            renderSubscriptions();
+        });
+    </script>
+
+    <!-- App Container -->
+    <div id="app" class="min-h-screen flex flex-col">
+        
+        <!-- Navigation Header -->
+        <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                
+                <!-- Brand Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('shop')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-500 to-amber-400 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+                        <i class="fa-solid font-bold fa-paw text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="font-extrabold text-xl tracking-tight text-gray-900">PawPals</span>
+                        <span class="text-xs px-2 py-0.5 ml-1.5 bg-copilot-50 text-copilot-600 font-semibold rounded-full border border-copilot-500/20">AI Visual Studio</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="hidden md:flex items-center space-x-1">
+                    <button onclick="switchTab('shop')" id="nav-shop" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold text-brand-600 bg-brand-50">
+                        <i class="fa-solid fa-store mr-2"></i><span data-i18n="navShop">線上商城</span>
+                    </button>
+                    <button onclick="openCopilotVisualSearch()" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:text-brand-600 hover:bg-gray-100 transition">
+                        <i class="fa-solid fa-camera mr-2 text-copilot-500"></i><span data-i18n="navVisualSearch">AI 拍照/識圖搜尋</span>
+                    </button>
+                    <button onclick="switchTab('subscriptions')" id="nav-subscriptions" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:text-brand-600 hover:bg-gray-100 transition relative">
+                        <i class="fa-solid fa-arrows-rotate mr-2 text-emerald-500"></i><span data-i18n="navSubscriptions">定期訂閱管家</span>
+                        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full"></span>
+                    </button>
+                    <button onclick="switchTab('admin')" id="nav-admin" class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:text-brand-600 hover:bg-gray-100 transition">
+                        <i class="fa-solid fa-chart-line mr-2 text-indigo-500"></i><span data-i18n="navAdmin">商家後台</span>
+                    </button>
+                </nav>
+
+                <!-- Actions & Settings -->
+                <div class="flex items-center space-x-3">
+                    <!-- Language Selector -->
+                    <div class="relative">
+                        <select id="langSelect" onchange="changeLanguage(this.value)" class="appearance-none bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold py-2 pl-3 pr-7 rounded-lg border-0 cursor-pointer focus:ring-2 focus:ring-brand-500 transition">
+                            <option value="zh">繁體中文</option>
+                            <option value="en">English</option>
+                            <option value="ja">日本語</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none"></i>
+                    </div>
+
+                    <!-- Cart Drawer Trigger -->
+                    <button onclick="toggleCartDrawer(true)" class="relative p-2.5 rounded-xl text-gray-700 hover:bg-gray-100 transition">
+                        <i class="fa-solid fa-bag-shopping text-lg"></i>
+                        <span id="cartBadge" class="absolute top-1 right-1 bg-brand-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center scale-0 transition-transform">0</span>
+                    </button>
+
+                    <!-- Mobile Menu Button -->
+                    <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100">
+                        <i class="fa-solid fa-bars text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu Dropdown -->
+            <div id="mobileMenu" class="hidden md:hidden border-t border-gray-100 bg-white px-4 pt-2 pb-4 space-y-2">
+                <button onclick="switchTab('shop'); toggleMobileMenu()" class="w-full text-left px-3 py-2.5 rounded-lg font-medium text-gray-700 hover:bg-gray-50 flex items-center">
+                    <i class="fa-solid fa-store w-6 text-brand-500"></i> <span data-i18n="navShop">線上商城</span>
+                </button>
+                <button onclick="openCopilotVisualSearch(); toggleMobileMenu()" class="w-full text-left px-3 py-2.5 rounded-lg font-medium text-gray-700 hover:bg-gray-50 flex items-center">
+                    <i class="fa-solid fa-camera w-6 text-copilot-500"></i> <span data-i18n="navVisualSearch">AI 拍照/識圖搜尋</span>
+                </button>
+                <button onclick="switchTab('subscriptions'); toggleMobileMenu()" class="w-full text-left px-3 py-2.5 rounded-lg font-medium text-gray-700 hover:bg-gray-50 flex items-center">
+                    <i class="fa-solid fa-arrows-rotate w-6 text-emerald-500"></i> <span data-i18n="navSubscriptions">定期訂閱管家</span>
+                </button>
+                <button onclick="switchTab('admin'); toggleMobileMenu()" class="w-full text-left px-3 py-2.5 rounded-lg font-medium text-gray-700 hover:bg-gray-50 flex items-center">
+                    <i class="fa-solid fa-chart-line w-6 text-indigo-500"></i> <span data-i18n="navAdmin">商家後台</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main View Area -->
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            
+            <!-- Shop View -->
+            <section id="view-shop" class="space-y-6">
+                <!-- Visual AI Hero Banner Banner -->
+                <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-gray-900 via-slate-800 to-copilot-900 text-white p-6 md:p-10 shadow-xl">
+                    <div class="absolute -right-10 -bottom-10 w-80 h-80 bg-copilot-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="relative z-10 max-w-2xl space-y-4">
+                        <div class="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold text-copilot-50 border border-white/10">
+                            <i class="fa-solid fa-wand-magic-sparkles text-copilot-500"></i>
+                            <span data-i18n="heroBadge">全新升級：AI 視覺影像識別 2.0</span>
+                        </div>
+                        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight" data-i18n="heroTitle">看到喜歡的寵物用品？拍張照即可尋找同款或替代方案</h1>
+                        <p class="text-gray-300 text-sm md:text-base leading-relaxed" data-i18n="heroSubtitle">上傳相片或打開手機相機對準物品，PawPals Copilot 會自動分析材質、成分、適合寵物，並精準比對庫存產品與試算優惠！</p>
+                        
+                        <div class="pt-2 flex flex-wrap gap-3">
+                            <button onclick="openCopilotVisualSearch()" class="px-5 py-3 bg-gradient-to-r from-brand-500 to-amber-500 hover:from-brand-600 hover:to-amber-600 text-white font-bold rounded-xl shadow-lg shadow-brand-500/30 flex items-center space-x-2 transition transform active:scale-95">
+                                <i class="fa-solid fa-camera text-lg"></i>
+                                <span data-i18n="btnStartVisualSearch">開啟 AI 拍照/識圖搜尋</span>
+                            </button>
+                            <button onclick="toggleCopilotModal(true)" class="px-5 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl border border-white/20 flex items-center space-x-2 transition">
+                                <i class="fa-solid fa-comments"></i>
+                                <span data-i18n="btnChatCopilot">開啟 AI 顧問諮詢</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Product Filters & Search Bar -->
+                <div class="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                    <!-- Category Tabs -->
+                    <div class="flex items-center space-x-2 overflow-x-auto pb-2 md:pb-0 custom-scrollbar" id="categoryFilters">
+                        <!-- Rendered dynamically -->
+                    </div>
+
+                    <!-- Search Input with Camera Shortcut -->
+                    <div class="relative min-w-[280px]">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" id="searchInput" oninput="filterProducts()" placeholder="搜尋產品名稱、關鍵字..." class="w-full pl-10 pr-10 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition" data-i18n-placeholder="searchPlaceholder">
+                        <button onclick="openCopilotVisualSearch()" title="拍照搜尋" class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-copilot-600 hover:bg-copilot-50 rounded-lg transition">
+                            <i class="fa-solid fa-camera"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="productGrid">
+                    <!-- Rendered dynamically -->
+                </div>
+            </section>
+
+            <!-- Subscriptions View -->
+            <section id="view-subscriptions" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900" data-i18n="subTitle">我的定期自動訂閱</h2>
+                            <p class="text-sm text-gray-500" data-i18n="subDesc">由 AI 自動監控寵物消耗品存量，為您省去重覆下單的麻煩。</p>
+                        </div>
+                        <button onclick="showToast(getI18nText('subCreatedToast'))" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm shadow-md transition flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-plus"></i>
+                            <span data-i18n="btnNewSub">新增訂閱週期</span>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="subscriptionList">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Admin View -->
+            <section id="view-admin" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900" data-i18n="adminTitle">商家營運與 Visual AI 管理後台</h2>
+                            <p class="text-sm text-gray-500" data-i18n="adminDesc">實時監視視覺搜尋轉換率、熱門檢索圖片特徵與庫存預警。</p>
+                        </div>
+                        <span class="px-3 py-1 bg-indigo-50 text-indigo-600 font-bold text-xs rounded-full border border-indigo-200">System Normal</span>
+                    </div>
+
+                    <!-- Metrics Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <div class="bg-gradient-to-br from-slate-50 to-gray-100 p-4 rounded-xl border border-gray-200">
+                            <div class="text-xs font-semibold text-gray-500 mb-1" data-i18n="metricVisualSearches">今日 AI 拍照搜尋次數</div>
+                            <div class="text-2xl font-black text-gray-800">1,482 <span class="text-xs text-emerald-600 font-normal"><i class="fa-solid fa-arrow-up"></i> +24%</span></div>
+                        </div>
+                        <div class="bg-gradient-to-br from-slate-50 to-gray-100 p-4 rounded-xl border border-gray-200">
+                            <div class="text-xs font-semibold text-gray-500 mb-1" data-i18n="metricVisualConv">相機搜尋轉換率</div>
+                            <div class="text-2xl font-black text-copilot-600">18.6% <span class="text-xs text-emerald-600 font-normal"><i class="fa-solid fa-arrow-up"></i> +3.2%</span></div>
+                        </div>
+                        <div class="bg-gradient-to-br from-slate-50 to-gray-100 p-4 rounded-xl border border-gray-200">
+                            <div class="text-xs font-semibold text-gray-500 mb-1" data-i18n="metricSubActive">有效自動訂閱數</div>
+                            <div class="text-2xl font-black text-emerald-600">328</div>
+                        </div>
+                        <div class="bg-gradient-to-br from-slate-50 to-gray-100 p-4 rounded-xl border border-gray-200">
+                            <div class="text-xs font-semibold text-gray-500 mb-1" data-i18n="metricTotalRev">本月總營收 (NT$)</div>
+                            <div class="text-2xl font-black text-brand-600">$482,900</div>
+                        </div>
+                    </div>
+
+                    <!-- AI Search Top Visual Tags -->
+                    <div class="border border-gray-100 rounded-xl p-4 bg-gray-50/50 space-y-4">
+                        <h3 class="font-bold text-gray-800 text-sm flex items-center" data-i18n="adminTopTags">
+                            <i class="fa-solid fa-tags text-copilot-500 mr-2"></i> 熱門視覺識別特徵與比對關鍵字
+                        </h3>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 bg-white border border-gray-200 text-xs font-medium rounded-lg shadow-sm">凍乾飼料 (842)</span>
+                            <span class="px-3 py-1 bg-white border border-gray-200 text-xs font-medium rounded-lg shadow-sm">人體工學寵物床 (610)</span>
+                            <span class="px-3 py-1 bg-white border border-gray-200 text-xs font-medium rounded-lg shadow-sm">豆腐貓砂 6L (520)</span>
+                            <span class="px-3 py-1 bg-white border border-gray-200 text-xs font-medium rounded-lg shadow-sm">無毒橡膠咬膠 (319)</span>
+                            <span class="px-3 py-1 bg-white border border-gray-200 text-xs font-medium rounded-lg shadow-sm">自動雷射逗貓棒 (280)</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Floating AI Copilot Widget Button -->
+        <div class="fixed bottom-6 right-6 z-30">
+            <button onclick="toggleCopilotModal(true)" class="pulse-ring group relative flex items-center space-x-2 bg-gradient-to-r from-copilot-600 to-brand-500 hover:from-copilot-500 hover:to-brand-600 text-white p-3.5 sm:px-5 sm:py-3.5 rounded-full shadow-2xl transition duration-300 transform hover:scale-105">
+                <i class="fa-solid fa-camera-retro text-xl"></i>
+                <span class="hidden sm:inline font-bold text-sm tracking-wide" data-i18n="btnCopilotWidget">Visual AI Copilot</span>
+                <span class="absolute -top-1 -right-1 bg-red-500 w-3.5 h-3.5 rounded-full border-2 border-white"></span>
+            </button>
+        </div>
+
+        <!-- Copilot & Visual Search Modal Window -->
+        <div id="copilotModal" class="fixed inset-0 z-50 hidden bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+            <div class="bg-white w-full max-w-3xl h-[90vh] max-h-[750px] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-100">
+                
+                <!-- Modal Header -->
+                <div class="bg-slate-900 text-white px-5 py-4 flex items-center justify-between border-b border-slate-800">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-lg bg-copilot-500/20 text-copilot-500 border border-copilot-500/30 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-robot text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-base flex items-center gap-2">
+                                PawPals Visual AI Copilot
+                                <span class="text-[10px] bg-copilot-500/20 text-copilot-300 px-2 py-0.5 rounded-full font-mono">v2.4 Live</span>
+                            </h3>
+                            <p class="text-xs text-slate-400" data-i18n="copilotHeaderDesc">支援拍攝產品/照片解析、成分查詢與替代品比對</p>
+                        </div>
+                    </div>
+                    <button onclick="toggleCopilotModal(false)" class="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800 transition">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Chat & Visual Studio Body -->
+                <div class="flex-1 flex flex-col bg-slate-50 overflow-hidden relative">
+                    
+                    <!-- Chat History Scroll Container -->
+                    <div id="chatContainer" class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                        
+                        <!-- AI Greeting Message -->
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 rounded-full bg-copilot-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                AI
+                            </div>
+                            <div class="bg-white p-4 rounded-2xl rounded-tl-none border border-gray-200/80 shadow-sm max-w-[85%] space-y-2">
+                                <p class="text-sm text-gray-800 leading-relaxed" data-i18n="copilotGreeting">
+                                    您好！我是 PawPals Visual AI 寵物助理。您可以隨時**拍照**或**上傳照片**，我會獨立分析用品材質、營養成分，並找出同款或類似優惠產品！
+                                </p>
+                                <!-- Quick Sample Photo Triggers -->
+                                <div class="pt-2 border-t border-gray-100">
+                                    <p class="text-xs font-semibold text-gray-500 mb-2" data-i18n="quickTryTitle">💡 快速試用範例照片：</p>
+                                    <div class="flex flex-wrap gap-2">
+                                        <button onclick="simulateSampleImageSearch(0)" class="text-xs bg-slate-100 hover:bg-brand-50 hover:text-brand-600 border border-gray-200 rounded-lg px-2.5 py-1.5 transition flex items-center space-x-1">
+                                            <i class="fa-solid fa-bed text-amber-500"></i>
+                                            <span data-i18n="sampleBed">人體工學狗床</span>
+                                        </button>
+                                        <button onclick="simulateSampleImageSearch(1)" class="text-xs bg-slate-100 hover:bg-brand-50 hover:text-brand-600 border border-gray-200 rounded-lg px-2.5 py-1.5 transition flex items-center space-x-1">
+                                            <i class="fa-solid fa-fish text-sky-500"></i>
+                                            <span data-i18n="sampleTreats">鮭魚凍乾貓零食</span>
+                                        </button>
+                                        <button onclick="simulateSampleImageSearch(2)" class="text-xs bg-slate-100 hover:bg-brand-50 hover:text-brand-600 border border-gray-200 rounded-lg px-2.5 py-1.5 transition flex items-center space-x-1">
+                                            <i class="fa-solid fa-wand-magic text-purple-500"></i>
+                                            <span data-i18n="sampleToy">羽毛雷射逗貓棒</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Live Camera Overlay Container (When active) -->
+                    <div id="cameraPreviewContainer" class="hidden absolute inset-0 bg-black/90 z-20 flex flex-col justify-between p-4">
+                        <div class="flex justify-between items-center text-white">
+                            <span class="text-xs font-semibold bg-red-600 px-2.5 py-1 rounded-full animate-pulse"><i class="fa-solid fa-circle mr-1 text-[8px]"></i> LIVE CAMERA</span>
+                            <button onclick="closeCameraView()" class="p-2 text-gray-300 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+                        </div>
+                        
+                        <!-- Video Stream Canvas Placeholder -->
+                        <div class="relative flex-1 my-4 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center border border-slate-700">
+                            <video id="webcamVideo" autoplay playsinline class="w-full h-full object-cover"></video>
+                            
+                            <!-- Scanner Overlay Graphics -->
+                            <div class="absolute inset-8 border-2 border-dashed border-copilot-500/60 rounded-xl pointer-events-none flex items-center justify-center">
+                                <div class="scan-line"></div>
+                                <span class="text-xs text-copilot-300 font-mono bg-black/60 px-3 py-1 rounded-full border border-copilot-500/30" data-i18n="alignProductPrompt">將產品放入框內即可拍攝</span>
+                            </div>
+                        </div>
+
+                        <!-- Camera Trigger Action Bar -->
+                        <div class="flex items-center justify-center pb-2">
+                            <button onclick="capturePhotoFromCamera()" class="w-16 h-16 rounded-full bg-white border-4 border-copilot-500 flex items-center justify-center shadow-lg active:scale-95 transition">
+                                <div class="w-12 h-12 rounded-full bg-copilot-600"></div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Image Preview / Analysis Bar before sending -->
+                    <div id="imageStagingBar" class="hidden bg-slate-100 border-t border-gray-200 p-3 flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="relative w-14 h-14 rounded-lg overflow-hidden border border-gray-300 bg-black">
+                                <img id="stagedImagePreview" class="w-full h-full object-cover" src="" alt="preview">
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-gray-800" data-i18n="photoReady">影像已就緒</p>
+                                <p class="text-[11px] text-gray-500" data-i18n="clickSendToAnalyze">點擊傳送按鈕讓 AI 進行視覺搜尋</p>
+                            </div>
+                        </div>
+                        <button onclick="clearStagedImage()" class="text-xs text-red-500 hover:text-red-700 px-2.5 py-1 rounded-lg hover:bg-red-50">
+                            <i class="fa-solid fa-trash-can mr-1"></i><span data-i18n="btnCancel">取消</span>
+                        </button>
+                    </div>
+
+                    <!-- Chat Input Controls -->
+                    <div class="p-3 bg-white border-t border-gray-200">
+                        <form id="copilotForm" onsubmit="handleCopilotSubmit(event)" class="flex items-center gap-2">
+                            
+                            <!-- File Input Hidden -->
+                            <input type="file" id="imageFileInput" accept="image/*" onchange="handleFileSelected(event)" class="hidden">
+
+                            <!-- Upload Photo Button -->
+                            <button type="button" onclick="document.getElementById('imageFileInput').click()" title="上傳照片" class="p-2.5 text-gray-500 hover:text-copilot-600 hover:bg-copilot-50 rounded-xl transition border border-gray-200">
+                                <i class="fa-solid fa-image text-lg"></i>
+                            </button>
+
+                            <!-- Take Photo Camera Button -->
+                            <button type="button" onclick="openCameraView()" title="開啟相機拍攝" class="p-2.5 text-gray-500 hover:text-copilot-600 hover:bg-copilot-50 rounded-xl transition border border-gray-200">
+                                <i class="fa-solid fa-camera text-lg"></i>
+                            </button>
+
+                            <!-- Text Input -->
+                            <input type="text" id="copilotInput" placeholder="輸入文字或附帶照片詢問..." class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-copilot-500 focus:bg-white transition" data-i18n-placeholder="copilotInputPlaceholder">
+
+                            <!-- Submit Button -->
+                            <button type="submit" class="px-4 py-2.5 bg-copilot-600 hover:bg-copilot-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Shopping Cart Drawer -->
+        <div id="cartDrawer" class="fixed inset-0 z-50 hidden bg-gray-900/50 backdrop-blur-sm transition-opacity">
+            <div class="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl flex flex-col">
+                <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+                    <h3 class="font-bold text-lg text-gray-800 flex items-center">
+                        <i class="fa-solid fa-bag-shopping text-brand-500 mr-2"></i>
+                        <span data-i18n="cartTitle">購物車</span>
+                    </h3>
+                    <button onclick="toggleCartDrawer(false)" class="text-gray-400 hover:text-gray-600 p-2">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar" id="cartItemsList">
+                    <!-- Cart items rendered dynamically -->
+                </div>
+
+                <div class="p-4 border-t border-gray-100 bg-gray-50 space-y-3">
+                    <div class="flex justify-between text-sm text-gray-600">
+                        <span data-i18n="cartSubtotal">小計</span>
+                        <span id="cartSubtotal" class="font-semibold text-gray-800">NT$ 0</span>
+                    </div>
+                    <div class="flex justify-between text-base font-bold text-gray-900">
+                        <span data-i18n="cartTotal">總計</span>
+                        <span id="cartTotal" class="text-brand-600">NT$ 0</span>
+                    </div>
+                    <button onclick="checkout()" class="w-full py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl shadow-lg shadow-brand-500/20 transition" data-i18n="btnCheckout">
+                        前往結帳
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Details & Reviews Modal -->
+        <div id="productModal" class="fixed inset-0 z-50 hidden bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+            <div class="bg-white rounded-2xl max-w-3xl w-full p-4 sm:p-6 shadow-2xl relative overflow-hidden max-h-[92vh] flex flex-col custom-scrollbar" id="productModalContent">
+                <!-- Rendered dynamically -->
+            </div>
+        </div>
+
+        <!-- Write / Submit Review Modal -->
+        <div id="writeReviewModal" class="fixed inset-0 z-50 hidden bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative space-y-4">
+                <button onclick="toggleWriteReviewModal(false)" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900" data-i18n="writeReviewTitle">撰寫商品評價</h3>
+                    <p class="text-xs text-gray-500" data-i18n="writeReviewSubtitle">分享您與寶貝的真實使用體驗，幫助更多毛爸媽！</p>
+                </div>
+
+                <form onsubmit="handleReviewSubmit(event)" class="space-y-4">
+                    <input type="hidden" id="reviewProductId" value="">
+                    
+                    <!-- Star Selector -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1" data-i18n="selectRating">整體滿意度</label>
+                        <div class="flex items-center space-x-2 text-2xl text-amber-400 cursor-pointer" id="starPicker">
+                            <i class="fa-solid fa-star hover:scale-110 transition" onclick="setReviewScore(1)"></i>
+                            <i class="fa-solid fa-star hover:scale-110 transition" onclick="setReviewScore(2)"></i>
+                            <i class="fa-solid fa-star hover:scale-110 transition" onclick="setReviewScore(3)"></i>
+                            <i class="fa-solid fa-star hover:scale-110 transition" onclick="setReviewScore(4)"></i>
+                            <i class="fa-solid fa-star hover:scale-110 transition" onclick="setReviewScore(5)"></i>
+                        </div>
+                        <span id="selectedRatingLabel" class="text-xs text-gray-500 font-semibold mt-1 inline-block">5.0 / 5.0 (極力推薦)</span>
+                    </div>
+
+                    <!-- User Name Input -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1" data-i18n="reviewAuthorName">您的暱稱 / 寵物名字</label>
+                        <input type="text" id="reviewAuthor" required placeholder="例：柴犬波波媽" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-brand-500 transition">
+                    </div>
+
+                    <!-- Review Comment Text -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1" data-i18n="reviewCommentText">評價內容與體驗心得</label>
+                        <textarea id="reviewComment" rows="4" required placeholder="材質質感如何？毛孩喜歡嗎？出貨速度滿意嗎？" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-brand-500 transition custom-scrollbar"></textarea>
+                    </div>
+
+                    <!-- Optional Photo Attachment -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1" data-i18n="reviewPhotoAttach">上傳實拍照片 (選填)</label>
+                        <input type="file" id="reviewPhotoInput" accept="image/*" class="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-600 hover:file:bg-brand-100">
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="w-full py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl shadow-md transition" data-i18n="btnSubmitReview">
+                        公開送出評價
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Toast Notification Container -->
+        <div id="toast" class="fixed top-20 right-6 z-50 bg-gray-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 transform translate-y-[-100px] opacity-0 transition-all duration-300 pointer-events-none">
+            <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+            <span id="toastMessage" class="text-sm font-medium">通知訊息</span>
+        </div>
+
+    </div>
+</body>
+</html>
